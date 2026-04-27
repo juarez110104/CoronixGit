@@ -12,49 +12,48 @@ import java.util.*;
  */
 public class ClasePrincipal {
 
-    static Map<String, Integer> variables = new HashMap<>();
+    static Map<String, Cuarto> variables = new HashMap<>();
 
     public static void main(String[] args) {
 
-        String[] codigo = {
-            "cuarto a = 5;",
-            "cuarto b = 3;",
-            "a + b"
-        };
-
-        for (String linea : codigo) {
-            procesarLinea(linea);
-        }
+        procesar("cuarto a = 5;");
+        procesar("cuarto b = 3;");
+        procesar("a + b");
     }
 
-    public static void procesarLinea(String linea) {
+    public static void procesar(String linea) {
+
         linea = linea.trim();
 
-        // Simular declaración: cuarto a = 5;
+        // 🔹 Simulación léxica: detectar "cuarto"
         if (linea.startsWith("cuarto")) {
+
             String[] partes = linea.replace(";", "").split(" ");
 
             String nombre = partes[1];
             int valor = Integer.parseInt(partes[3]);
 
-            variables.put(nombre, valor);
+            variables.put(nombre, new Cuarto(valor));
 
-            System.out.println("Variable creada: " + nombre + " = " + valor);
-        } // Simular operación: a + b
+            System.out.println("Declarado: " + nombre);
+        } // 🔹 Simulación sintáctica + semántica
         else if (linea.contains("+")) {
+
             String[] partes = linea.split("\\+");
 
-            int val1 = obtenerValor(partes[0].trim());
-            int val2 = obtenerValor(partes[1].trim());
+            Cuarto a = obtener(partes[0].trim());
+            Cuarto b = obtener(partes[1].trim());
 
-            System.out.println("Resultado: " + (val1 + val2));
+            Cuarto resultado = a.sumar(b);
+
+            System.out.println("Resultado: " + resultado);
         }
     }
 
-    public static int obtenerValor(String token) {
-        if (variables.containsKey(token)) {
-            return variables.get(token);
+    public static Cuarto obtener(String nombre) {
+        if (!variables.containsKey(nombre)) {
+            throw new RuntimeException("Error semántico: variable no definida -> " + nombre);
         }
-        return Integer.parseInt(token);
+        return variables.get(nombre);
     }
 }
