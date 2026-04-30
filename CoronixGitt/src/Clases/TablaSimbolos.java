@@ -1,56 +1,31 @@
 package Clases;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
+import Analizador.ErrorC;
 
 public class TablaSimbolos {
 
-    // 🔹 Clase interna: símbolo
     public static class Simbolo {
-        public String nombre;
         public String tipo;
         public Object valor;
 
-        public Simbolo(String nombre, String tipo, Object valor) {
-            this.nombre = nombre;
-            this.tipo = tipo;
-            this.valor = valor;
-        }
-
-        @Override
-        public String toString() {
-            return nombre + " : " + tipo + " = " + valor;
+        public Simbolo(String t, Object v) {
+            tipo = t;
+            valor = v;
         }
     }
 
-    // 🔹 Tabla
-    private Map<String, Simbolo> tabla = new LinkedHashMap<>();
+    private Map<String, Simbolo> tabla = new HashMap<>();
 
-    // 🔥 INSERTAR / ACTUALIZAR
-    public void guardar(String nombre, String tipo, Object valor) {
-        tabla.put(nombre, new Simbolo(nombre, tipo, valor));
+    public void guardar(String n, String t, Object v) {
+        tabla.put(n, new Simbolo(t, v));
     }
 
-    // 🔥 OBTENER
-    public Simbolo obtener(String nombre) {
-        if (!tabla.containsKey(nombre)) {
-            throw new RuntimeException("Variable no definida: " + nombre);
-        }
-        return tabla.get(nombre);
-    }
-
-    // 🔥 EXISTE
-    public boolean existe(String nombre) {
-        return tabla.containsKey(nombre);
-    }
-
-    // 🔥 LIMPIAR
-    public void limpiar() {
-        tabla.clear();
-    }
-
-    // 🔥 PARA MOSTRAR EN INTERFAZ
-    public Map<String, Simbolo> getTabla() {
-        return tabla;
+    // 🔥 AQUÍ ESTÁ LA CORRECCIÓN IMPORTANTE
+    public Simbolo obtener(String n, int linea) throws ErrorC {
+        if (!tabla.containsKey(n))
+            throw new ErrorC(ErrorC.Tipo.SEMANTICO, linea,
+                    "Variable no definida: " + n);
+        return tabla.get(n);
     }
 }

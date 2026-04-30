@@ -1,88 +1,86 @@
 package Interfaz;
 
 import Clases.ClasePrincipal;
-import Analizador.Token;
-import java.awt.*;
+import Analizador.*;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import java.awt.*;
 
 public class InterfazCoronix extends JFrame {
 
-    JTextArea editor, consola;
-    JTable tablaTokens, tablaSimbolos;
+    JTextArea editor = new JTextArea();
+    JTextArea consola = new JTextArea();
 
-    DefaultTableModel mTokens, mSimbolos;
+    DefaultTableModel t1 = new DefaultTableModel(
+            new String[]{"Token","Lexema","Patrón","Reservada"},0);
 
-    public InterfazCoronix() {
+    DefaultTableModel t2 = new DefaultTableModel(
+            new String[]{"Elemento","Tipo"},0);
 
-        setTitle("🌐 Coronix IDE PRO");
+    public InterfazCoronix(){
+
+        setTitle("Coronix IDE PRO");
         setSize(1100,650);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
-        editor=new JTextArea();
-        consola=new JTextArea();
+        JTable tabla1 = new JTable(t1);
+        JTable tabla2 = new JTable(t2);
 
-        mTokens=new DefaultTableModel(new String[]{"Lexema","Tipo","Linea"},0);
-        tablaTokens=new JTable(mTokens);
+        JButton run = new JButton("▶ Ejecutar");
 
-        mSimbolos=new DefaultTableModel(new String[]{"Var","Tipo","Valor"},0);
-        tablaSimbolos=new JTable(mSimbolos);
+        run.addActionListener(e -> ejecutar());
 
-        JButton run=new JButton("Ejecutar");
+        JSplitPane split1 = new JSplitPane(
+                JSplitPane.VERTICAL_SPLIT,
+                new JScrollPane(tabla1),
+                new JScrollPane(tabla2)
+        );
 
-        run.addActionListener(e->ejecutar());
+        JSplitPane split2 = new JSplitPane(
+                JSplitPane.VERTICAL_SPLIT,
+                split1,
+                new JScrollPane(consola)
+        );
 
-        JSplitPane abajo=new JSplitPane(JSplitPane.VERTICAL_SPLIT,
-                new JScrollPane(tablaSimbolos),
-                new JScrollPane(consola));
-
-        JSplitPane derecha=new JSplitPane(JSplitPane.VERTICAL_SPLIT,
-                new JScrollPane(tablaTokens),
-                abajo);
-
-        JSplitPane main=new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+        JSplitPane main = new JSplitPane(
+                JSplitPane.HORIZONTAL_SPLIT,
                 new JScrollPane(editor),
-                derecha);
+                split2
+        );
 
-        add(run,BorderLayout.NORTH);
-        add(main);
+        add(run, BorderLayout.NORTH);
+        add(main, BorderLayout.CENTER);
 
         setVisible(true);
     }
 
-    private void ejecutar(){
+    void ejecutar(){
 
-        mTokens.setRowCount(0);
-        mSimbolos.setRowCount(0);
+        t1.setRowCount(0);
+        t2.setRowCount(0);
         consola.setText("");
 
-        ClasePrincipal.tabla.limpiar();
-
-        String[] lineas=editor.getText().split("\n");
+        String[] lineas = editor.getText().split("\n");
 
         for(int i=0;i<lineas.length;i++){
 
-            String linea=lineas[i].trim();
-            if(linea.isEmpty()) continue;
+            String l = lineas[i].trim();
+            if(l.isEmpty()) continue;
 
             try{
 
-                var tokens=ClasePrincipal.obtenerTokens(linea,i+1);
+                for(Token tk:ClasePrincipal.obtenerTokens(l))
+                    t1.addRow(new Object[]{tk.token,tk.lexema,tk.patron,tk.reservada});
 
-                for(Token t:tokens)
-                    mTokens.addRow(new Object[]{t.lexema,t.tipo,t.linea});
+                for(String[] c:ClasePrincipal.clasificacion(l))
+                    t2.addRow(c);
 
-                String res=ClasePrincipal.procesarLinea(linea);
-                consola.append("✔ "+res+"\n");
+                String r = ClasePrincipal.procesarLinea(l,i+1);
+                consola.append("✔ "+r+"\n");
 
-            }catch(Exception ex){
-                consola.append("❌ Linea "+(i+1)+": "+ex.getMessage()+"\n");
+            }catch(ErrorC e){
+                consola.append("❌ "+e+"\n");
             }
         }
-
-        var tabla=ClasePrincipal.tablaUI();
-
-        for(String[] f:tabla)
-            mSimbolos.addRow(f);
     }
 }
